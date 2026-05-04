@@ -7,6 +7,14 @@ on:
 jobs:
   generate:
     runs-on: ubuntu-latest
+
+    env:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -14,29 +22,23 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
-        run: |
-          npm install sharp @aws-sdk/client-s3 dotenv tsx
+        run: npm install sharp @aws-sdk/client-s3 dotenv tsx
 
       - name: Generate and Upload Cover
         id: generate_step
-        env:
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
         run: |
-          # Dispatch payload contains: { "title": "...", "subtext": "...", "bookId": "..." }
           TITLE="${{ github.event.client_payload.title }}"
           SUBTEXT="${{ github.event.client_payload.subtext }}"
-          npx tsx for-github-actions/generate.ts "$TITLE" "$SUBTEXT"
 
-      # Optional: Call back to your app or update Firebase if you provide FB credentials
-      # - name: Update Firestore
-      #   run: |
-      #     # You could use a custom script or Firebase Admin SDK here
-      #     # node update-firestore.js ${{ steps.generate_step.outputs.cover_url }} ${{ github.event.client_payload.bookId }}
+          OUTPUT=$(npx tsx for-github-actions/generate.ts "$TITLE" "$SUBTEXT")
+          echo "$OUTPUT"
+
+          COVER_URL=$(echo "$OUTPUT" | tail -n 1 | sed 's/^Cover generated and uploaded: //')
+          echo "cover_url=$COVER_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Show result
+        run: echo "Cover URL = ${{ steps.generate_step.outputs.cover_url }}"
