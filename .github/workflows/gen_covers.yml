@@ -26,7 +26,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install sharp @aws-sdk/client-s3 dotenv tsx
+        run: npm ci sharp @aws-sdk/client-s3 dotenv tsx
 
       - name: Generate and Upload Cover
         id: generate_step
