@@ -37,7 +37,7 @@ const storageService = {
   }
 };
 
-async function generateAndUploadCover(title: string, subtext: string = 'Premium Liquor') {
+async function generateAndUploadCover(title: string, subtext: string = 'Premium Liquor', bookId?: string) {
   const width = 600;
   const height = 900;
 
@@ -272,8 +272,17 @@ async function generateAndUploadCover(title: string, subtext: string = 'Premium 
     .webp({ quality: 90, force: true })
     .toBuffer();
 
-  const fileName = `covers/cover_${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
-  const url = await storageService.uploadFile(imageBuffer, fileName, 'image/webp');
+if (!bookId) {
+  throw new Error("bookId is required for GitHub cover generation.");
+}
+
+const safeBookId = String(bookId).trim().replace(/[^a-zA-Z0-9_-]/g, "");
+
+if (!safeBookId) {
+  throw new Error("Invalid bookId.");
+}
+
+  const fileName = `covers/generated_${safeBookId}.webp`;  const url = await storageService.uploadFile(imageBuffer, fileName, 'image/webp');
   console.log(`::set-output name=cover_url::${url}`);
   return url;
 }
@@ -281,8 +290,9 @@ async function generateAndUploadCover(title: string, subtext: string = 'Premium 
 // Run script
 const title = process.argv[2] || "Untitled";
 const subtext = process.argv[3] || "Personal Reserve";
+const bookId = process.argv[4];
 
-generateAndUploadCover(title, subtext)
+generateAndUploadCover(title, subtext, bookId)
   .then((url) => {
     console.log(url);
     process.exit(0);
