@@ -1,38 +1,42 @@
-name: Headless Mixologist
+name: Generate Book Cover
 
 on:
   repository_dispatch:
     types: [generate-cover]
 
 jobs:
-  mix:
+  generate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install sharp @aws-sdk/client-s3
+        run: |
+          npm install sharp @aws-sdk/client-s3 dotenv tsx
 
-      - name: Shake Cocktail (Generate Cover)
+      - name: Generate and Upload Cover
+        id: generate_step
         env:
-          ORDER_ID: ${{ github.event.client_payload.orderId }}
-          TITLE: ${{ github.event.client_payload.title }}
-          SUBTEXT: ${{ github.event.client_payload.subtext }}
-          BOOK_ID: ${{ github.event.client_payload.bookId }}
-          CALLBACK_URL: ${{ github.event.client_payload.callbackUrl }}
-          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
           R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          # Giả sử file generate.ts đã được chuyển sang JS hoặc chạy bằng ts-node/tsx
-          # Bạn có thể copy nội dung script từ app vào đây
-          npx tsx generate.ts
+          # Dispatch payload contains: { "title": "...", "subtext": "...", "bookId": "..." }
+          TITLE="${{ github.event.client_payload.title }}"
+          SUBTEXT="${{ github.event.client_payload.subtext }}"
+          npx tsx for-github-actions/generate.ts "$TITLE" "$SUBTEXT"
+
+      # Optional: Call back to your app or update Firebase if you provide FB credentials
+      # - name: Update Firestore
+      #   run: |
+      #     # You could use a custom script or Firebase Admin SDK here
+      #     # node update-firestore.js ${{ steps.generate_step.outputs.cover_url }} ${{ github.event.client_payload.bookId }}
