@@ -1,0 +1,38 @@
+name: Headless Mixologist
+
+on:
+  repository_dispatch:
+    types: [generate-cover]
+
+jobs:
+  mix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install sharp @aws-sdk/client-s3
+
+      - name: Shake Cocktail (Generate Cover)
+        env:
+          ORDER_ID: ${{ github.event.client_payload.orderId }}
+          TITLE: ${{ github.event.client_payload.title }}
+          SUBTEXT: ${{ github.event.client_payload.subtext }}
+          BOOK_ID: ${{ github.event.client_payload.bookId }}
+          CALLBACK_URL: ${{ github.event.client_payload.callbackUrl }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          # Giả sử file generate.ts đã được chuyển sang JS hoặc chạy bằng ts-node/tsx
+          # Bạn có thể copy nội dung script từ app vào đây
+          npx tsx generate.ts
