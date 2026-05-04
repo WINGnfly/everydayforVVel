@@ -26,16 +26,16 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci sharp @aws-sdk/client-s3 dotenv tsx
+        run: npm ci
 
       - name: Generate and Upload Cover
         id: generate_step
         run: |
           TITLE="${{ github.event.client_payload.title }}"
           SUBTEXT="${{ github.event.client_payload.subtext }}"
-        
-          COVER_URL=$(npx tsx generate.ts "$TITLE" "$SUBTEXT" | tail -n 1)
-          echo "cover_url=$COVER_URL" >> "$GITHUB_OUTPUT"
+          BOOK_ID="${{ github.event.client_payload.bookId }}"
+      
+          npx tsx for-github-actions/generate.ts "$TITLE" "$SUBTEXT" "$BOOK_ID"
 
       - name: Show result
         run: echo "Cover URL = ${{ steps.generate_step.outputs.cover_url }}"
