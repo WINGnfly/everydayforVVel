@@ -284,7 +284,7 @@ const subtext = process.argv[3] || "Personal Reserve";
 
 generateAndUploadCover(title, subtext)
   .then((url) => {
-    console.log("Cover generated and uploaded:", url);
+    console.log(url);
     process.exit(0);
   })
   .catch((err) => {
