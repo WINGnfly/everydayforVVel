@@ -33,11 +33,8 @@ jobs:
         run: |
           TITLE="${{ github.event.client_payload.title }}"
           SUBTEXT="${{ github.event.client_payload.subtext }}"
-
-          OUTPUT=$(npx tsx for-github-actions/generate.ts "$TITLE" "$SUBTEXT")
-          echo "$OUTPUT"
-
-          COVER_URL=$(echo "$OUTPUT" | tail -n 1 | sed 's/^Cover generated and uploaded: //')
+        
+          COVER_URL=$(npx tsx for-github-actions/generate.ts "$TITLE" "$SUBTEXT" | tail -n 1)
           echo "cover_url=$COVER_URL" >> "$GITHUB_OUTPUT"
 
       - name: Show result
