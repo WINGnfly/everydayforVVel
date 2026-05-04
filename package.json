@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "generate-cover": "tsx scripts/generate-cover.ts"
+    "generate-cover": "tsx generate-cover.ts"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
