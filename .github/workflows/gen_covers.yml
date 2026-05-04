@@ -34,7 +34,7 @@ jobs:
           TITLE="${{ github.event.client_payload.title }}"
           SUBTEXT="${{ github.event.client_payload.subtext }}"
         
-          COVER_URL=$(npx tsx for-github-actions/generate.ts "$TITLE" "$SUBTEXT" | tail -n 1)
+          COVER_URL=$(npx tsx generate.ts "$TITLE" "$SUBTEXT" | tail -n 1)
           echo "cover_url=$COVER_URL" >> "$GITHUB_OUTPUT"
 
       - name: Show result
